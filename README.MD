@@ -3,7 +3,7 @@
 This repo is my note on basic android kernel development, covering the following aspects:
 
 - Building the kernel from source
-- Flashing a custom kernel to Pixel 6
+- Flashing a custom kernel to Pixel 6/7
 - Basic development settings for android linux kernel
 - Adding custom syscalls
 - Writing loadable kernel modules
@@ -40,6 +40,20 @@ repo sync
 Run the following command to build the kernel. 
 ```sh
 build/build.sh
+```
+
+Use `BUILD_CONFIG` envvar to set the build config, for example:
+```sh
+# For pixel 6
+BUILD_CONFIG=private/gs-google/build.config.slider build/build.sh
+# For pixel 7
+BUILD_CONFIG=private/gs-google/build.config.cloudripper build/build.sh
+```
+
+(Optional) Disable the LTO by setting `FAST_BUILD`=1 to speedup the building time, for example:
+```sh
+# For faster build without LTO
+FAST_BUILD=1 BUILD_CONFIG=private/gs-google/build.config.cloudripper build/build.sh
 ```
 
 If there is no error we will get the packed images under `/out/BRANCH/dist` (the `vmlinux` and other binaries are also available in this folder.). For example:
