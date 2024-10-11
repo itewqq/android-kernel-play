@@ -23,7 +23,7 @@ export PATH=$PATH:/home/user/.bin/
 export REPO_URL='https://mirrors.tuna.tsinghua.edu.cn/git/git-repo/'
 ```
 
-## 0x01 Build the kernel from source
+## 0x01 Build the kernel from source (<= Android 13)
 
 ### Fetch the kernel repository
 
@@ -70,7 +70,42 @@ vendor_dlkm.img
 
 >Note: in my laptop (latest Arch linux in 2023-12-31), the source code of branch will not compile successfully when using `libc 2.38`. An older libc solved this issue.
 
-## 0x02 Flashing the custom kernel to the device
+### Modify the Kconfig
+
+You can append sh function to `POST_DEFCONFIG_CMDS` in the build script to adjust Kconfig options, for example in the build script for Pixel 6:
+
+```diff
+diff --git a/build.config.slider b/build.config.slider
+index ba647ebd6..2994b3f8e 100644
+--- a/build.config.slider
++++ b/build.config.slider
+@@ -34,6 +34,15 @@ function concat_vendor_boot_modules() {
+   MODULES_LIST=${OUT_DIR}/vendor_boot_modules.concat
+ }
+ 
++POST_DEFCONFIG_CMDS="${POST_DEFCONFIG_CMDS} && my_custom_update_custom_kconfig"
++
++function my_custom_update_custom_kconfig() {
++  ${KERNEL_DIR}/scripts/config --file ${OUT_DIR}/.config \
++    -d CONFIG_SECURITY_DMESG_RESTRICT
++  (cd ${OUT_DIR} && \
++   make O=${OUT_DIR} "${TOOL_ARGS[@]}" ${MAKE_ARGS} olddefconfig)
++}
++
+ VENDOR_RAMDISK_CMDS="modify_vendor_ramdisk"
+ function modify_vendor_ramdisk() {
+   ln -f init.recovery.gs101.rc init.recovery.slider.rc
+
+```
+
+- `-e`: enable
+- `-d`: disable
+
+## 0x02 Build the kernel from source (> Android 13)
+
+TBD
+
+## 0x03 Flashing the custom kernel to the device
 
 >We should get an OEM-unlocked device and get it rooted. There are many tutorials on the XDA forum so I omit it here.
 
@@ -101,7 +136,7 @@ sudo fastboot flash vendor_dlkm vendor_dlkm.img
 4. Reboot into `Recovery mode` (for Pixel 6, pressing the `vol +` button together with the `power` button). Clear all the data in the recovery mode.
 5. Reboot and it's done. We may have to re-root the phone since we replaced the patched `boot.img` with a new one, if we did not modify the kernel to give us root power.
 
-## 0x03 Modify the kernel for fun and profit
+## 0x04 Modify the kernel for fun and profit
 
 ### Build the kernel for fuzzing
 
@@ -127,7 +162,7 @@ index 18a4588c3..119360232 100644
         seq_put_decimal_ull(m, "\nPid:\t", pid_nr_ns(pid, ns));
 ```
 
-## 0x04 Android kernel source auditing and development
+## 0x05 Android kernel source auditing and development
 
 ### Env setting
 
