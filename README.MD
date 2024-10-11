@@ -101,6 +101,25 @@ index ba647ebd6..2994b3f8e 100644
 - `-e`: enable
 - `-d`: disable
 
+### Update the KMI symbols
+
+The Android kernel ABI monitoring feature may prevent you from directly `EXPORT_SYMBOL`ing some global variables within the kernel source tree. You may run into errors like this:
+
+```sh
+ERROR: Differences between ksymtab and symbol list detected!
+Symbols missing from ksymtab:
+Symbols missing from symbol list:
+ - my_custom_exported_sym
+```
+
+To address this, you have to first invoke the `build_abi.sh` to re-generate the `abi_symbollist` and `android/abi_gki_aarch64_generic.xml`:
+```sh
+# for pixel 6
+BUILD_CONFIG=private/gs-google/build.config.slider build/build_abi.sh --update
+```
+
+If `build_abi.sh` is too slow in this step, you can manually add `FAST_BUILD=1` when calling `build.sh` inside it.
+
 ## 0x02 Build the kernel from source (> Android 13)
 
 TBD
